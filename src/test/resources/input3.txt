@@ -1,0 +1,3 @@
+name,capital,population,area
+Germany,Berlin,83190556,357022
+United States of America,"Washington, D.C",331893745,3796742

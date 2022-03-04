@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
  */
 public class JsonLineConverter implements Converter{
 
-    private final String delimeter;
-    private final List<DateTimeFormatter> dateFormatters;
+    protected final String delimeter;
+    protected final List<DateTimeFormatter> dateFormatters;
     private static final String[] supportedDateFormats = {"yyyy-MM-dd", "yyyy/MM/dd", "dd-MM-yyyy"};
-    private static final String splitterPostfix = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
+    protected static final String splitterPostfix = "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)";
     private static final String regexToClean = "^\"|\\||\"$|,$";
 
     public JsonLineConverter(String delimeter) {
@@ -52,7 +52,7 @@ public class JsonLineConverter implements Converter{
      * @param data - Text to clean
      * @return - Cleaned text
      */
-    private String trim(String data){
+    protected String trim(String data){
         //Trim double quotes
         data = data.replaceAll(regexToClean, "");
 
@@ -81,7 +81,7 @@ public class JsonLineConverter implements Converter{
      * @param formatter - DatetimeFormatter to parse with
      * @return - Parsed date
      */
-    private LocalDate parseDate(String dateStr, DateTimeFormatter formatter){
+    protected LocalDate parseDate(String dateStr, DateTimeFormatter formatter){
         try{
             return LocalDate.parse(dateStr, formatter);
         }catch (DateTimeParseException ex){

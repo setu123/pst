@@ -20,7 +20,7 @@ import java.util.Optional;
  */
 public class Main {
 
-    private static final String[] supportedDelimeters = {",", "\\|"};
+    public static final String[] supportedDelimeters = {",", "\\|"};
     private static final int totalFields = 6;
     public static final String outputDatePattern = "yyyy-MM-dd";
     public static final String outputFilename = "output.jsonl";
@@ -35,11 +35,11 @@ public class Main {
         String inputFile = args[0];
 
         Main main = new Main();
-        main.convertFile(inputFile);
+        main.convertFileWithIntelligence(inputFile);
     }
 
     /**
-     * Convert a input text file into JSONL file
+     * Convert an input text file into JSONL file
      * @param inputFile - File name along with path to convert
      * @throws IOException - Throws exception in case file not found or cannot be read/write
      */
@@ -83,6 +83,50 @@ public class Main {
     }
 
     /**
+     * Convert an input text file into JSONL file. Date types would be formatted as much as possible
+     * @param inputFile - File name along with path to convert
+     * @throws IOException - Throws exception in case file not found or cannot be read/write
+     */
+    public void convertFileWithIntelligence(String inputFile) throws IOException {
+        //Construct gson object to be used to write to json
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(LocalDate.class, getLocalDateSerializer())
+                .create();
+
+        Path path = Paths.get(inputFile);
+
+        //Get the first line to be used to determine delemeter
+        String heading = Files.lines(path).findFirst().get();
+
+        //Get appropriate delimiter based on heading line
+        Optional<String> delimiter = getDelimeter(heading);
+        if (!delimiter.isPresent()) {
+            System.out.println("Delimiter not supported. Exiting");
+            System.exit(0);
+        }
+
+        //Construct converter to be used to convert
+        Converter converter = new IntelligentJsonLineConverter(delimiter.get(), heading, gson);
+
+        //Get writer to write json lines
+        BufferedWriter bw = Files.newBufferedWriter(Paths.get(outputFilename));
+
+        Files.lines(path)   //Stream of lines
+                .skip(1)    //Skip the first one as its header text
+                .map(converter::intelligentConvert)    //Convert to Person object
+                .forEach(jsonText -> {        //For each person write it to file
+                    try {
+                        bw.write(jsonText);
+                        bw.newLine();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        bw.close(); //Close the output buffer
+    }
+
+    /**
      * Construct serializer to be used to write to json
      * @return Serializer for LocalDate
      */
@@ -98,7 +142,7 @@ public class Main {
      */
     private Optional<String> getDelimeter(String heading) {
         return Arrays.stream(supportedDelimeters)
-                .filter(delimeter -> heading.split(delimeter).length == totalFields)
+                .filter(delimeter -> heading.split(delimeter).length > 1)
                 .findAny();
     }
 }

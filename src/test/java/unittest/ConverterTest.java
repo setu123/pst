@@ -26,6 +26,7 @@ public class ConverterTest {
     private static Gson gson;
     private static final String inputFile1 = "src/test/resources/input1.txt";
     private static final String inputFile2 = "src/test/resources/input2.txt";
+    private static final String inputFile3 = "src/test/resources/input3.txt";
 
     @BeforeAll
     static void init(){
